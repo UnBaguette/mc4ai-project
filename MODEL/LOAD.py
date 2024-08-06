@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 
 # Load Dataset
-def load_dataset(data_path):
+def load_dataset(data_path, num_samples):
     images = []
     labels = []
     label_map = {chr(i + ord('A')): i for i in range(26)}  # A-Z mapped to 0-25
@@ -15,7 +15,7 @@ def load_dataset(data_path):
             label = label_map[folder_name]  # Assign label based on folder name
             count = 0
             for filename in os.listdir(folder_path):
-                if count >= 1000:   # Load the first 1000th images each folder
+                if count >= num_samples:   # Load n images each folder
                     break
                 img_path = os.path.join(folder_path, filename)
                 img = cv2.imread(img_path)
