@@ -15,6 +15,14 @@ def Train_model(X_train):
 
     model.add(Flatten())
 
+    #model.add(Dense(128, activation='relu', kernel_regularizer=l2(0.001)))
+    #model.add(BatchNormalization())
+    #model.add(Dropout(0.5))
+    
+    #model.add(Dense(64, activation='relu', kernel_regularizer=l2(0.001)))
+    #model.add(BatchNormalization())
+    #model.add(Dropout(0.5))
+
     model.add(Dense(26, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
