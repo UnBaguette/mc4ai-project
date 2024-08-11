@@ -15,6 +15,8 @@ def Train_model(X_train):
 
     model.add(Flatten())
     model.add(Dense(128, activation='softmax'))
+    #model.add(Flatten())
+    
     model.add(Dense(26, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
