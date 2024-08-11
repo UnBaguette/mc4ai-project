@@ -31,6 +31,10 @@ if 'X_test' not in st.session_state:
     st.session_state.X_test = None
 if 'y_test_ohe' not in st.session_state:
     st.session_state.y_test_ohe = None
+if 'X' not in st.session_state:
+    st.session_state.X = None
+if 'y' not in st.session_state:
+    st.session_state.y = None
 
 # Trang lựa chọn
 page = st.sidebar.selectbox("Select a page", ["Dataset Loading & Training", "Prediction"])
@@ -41,65 +45,83 @@ if page == "Dataset Loading & Training":
     # Chọn nguồn dữ liệu
     data_path = "DATASET"
 
-    # Cài đặt num_samples, test size và epochs
+    # Cài đặt num_samples
     num_samples = st.number_input("Number of Samples per Folder", min_value=10, value=2000)
-    test_size = st.number_input("Test Set Size (0.1 - 0.5)", min_value=0.1, max_value=0.5, value=0.2, step=0.05)
-    epochs = st.number_input("Number of Training Epochs", min_value=1, value=10)
 
-    # Nút để bắt đầu quá trình load, preprocess và train
-    if st.button("Load, Preprocess & Train Model"):
-        with st.spinner('Loading and Preprocessing Dataset...'):
-            if os.path.isdir(data_path):
+    # load
+    if st.button("Load Dataset"):
+        if os.path.isdir(data_path):
+            with st.spinner('Loading Dataset...'):
                 X, y = load_dataset(data_path, num_samples)
-                X_train, X_test, y_train_ohe, y_test_ohe = prep_dataset(X, y, test_size)
+
+                st.session_state.X = X
+                st.session_state.y = y
+
+            st.success("Dataset loaded successfully!")
+
+            st.write(f"Dataset loaded: {X.shape[0]} samples.")
+
+            st.write("Sample images from the dataset:")
+            fig, axs = plt.subplots(nrows=26, ncols=10, figsize=(20, 50))
+            axs = axs.flatten()
+            for i, letter in enumerate(letters):
+                indices = np.where(y == i)[0]
+                for j in range(min(10, len(indices))):  # Hiển thị tối đa 10 mẫu cho mỗi chữ cái
+                    img = X[indices[j]]
+                    img = Image.fromarray(img)
+                    axs[i * 10 + j].imshow(img, cmap='gray')
+                    axs[i * 10 + j].axis('off')
+                    if j == 0:
+                        axs[i * 10 + j].set_title(letter)
                 
-                st.session_state.X_test = X_test
-                st.session_state.y_test_ohe = y_test_ohe
+            plt.tight_layout()
+            st.pyplot(fig)
 
-                st.write(f"Dataset loaded: {X_train.shape[0]} training samples, {X_test.shape[0]} test samples.")
+            col1, col2 = st.columns(2)
 
-                st.write("Sample images from the dataset:")
-                fig, axs = plt.subplots(nrows=26, ncols=10, figsize=(20, 50))
-                axs = axs.flatten()
-                for i, letter in enumerate(letters):
-                    indices = np.where(y == i)[0]
-                    for j in range(min(10, len(indices))):  # Hiển thị tối đa 10 mẫu cho mỗi chữ cái
-                        img = X[indices[j]]
-                        img = Image.fromarray(img)
-                        axs[i * 10 + j].imshow(img, cmap='gray')
-                        axs[i * 10 + j].axis('off')
-                        if j == 0:
-                            axs[i * 10 + j].set_title(letter)
+            with col1:
+                test_size = st.number_input("Test Set Size (0.1 - 0.5)", min_value=0.1, max_value=0.5, value=0.2, step=0.05)
+    
+            with col2: 
+                epochs = st.number_input("Number of Training Epochs", min_value=1, value=10)
+            
+            # Training model
+            if st.button("Train Model"):
+                '''
+                if st.session_state.X is not None and st.session_state.y is not None:
+                    with st.spinner('Training model...'):
+                        X_train, X_test, y_train_ohe, y_test_ohe = prep_dataset(st.session_state.X, st.session_state.y, test_size)
+
+                        st.session_state.X_test = X_test
+                        st.session_state.y_test_ohe = y_test_ohe
+                        start_time = time.time()
+                        model = Train_model(X_train)
+                        history = fit_model(model, X_train, y_train_ohe, epochs)
+                        end_time = time.time()
+
+                        # Tính thời gian chạy
+                        elapsed_time = end_time - start_time
                 
-                plt.tight_layout()
-                st.pyplot(fig)
+                        st.session_state.model = model
+                        st.session_state.history = history
+                        st.session_state.y_label = letters
 
-                # Training model
-                with st.spinner('Training model...'):
-                    start_time = time.time()
-                    model = Train_model(X_train)
-                    history = fit_model(model, X_train, y_train_ohe, epochs)
-                    end_time = time.time()
-
-                    # Tính thời gian chạy
-                    elapsed_time = end_time - start_time
-                    
-                    st.session_state.model = model
-                    st.session_state.history = history
-                    st.session_state.y_label = letters
+                    st.success("Model trained successfully!")
 
                     test_loss, test_accuracy = model.evaluate(st.session_state.X_test, st.session_state.y_test_ohe)
+                
 
                     st.write(f"Training completed in {elapsed_time:.2f} seconds. "
                              f"Train Accuracy: {history.history['accuracy'][-1]*100:.2f}%. "
                              f"Test Accuracy: {test_accuracy*100:.2f}%")
-                    
-                    # Hiển thị độ chính xác và mất mát
+                
+                    # Hiển thị đồ thị cho độ chính xác và mất mát
                     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(20, 10))
-                    
+                
                     # Accuracy plot
                     ax1.plot(history.history['accuracy'], label='Train Accuracy')
-                    #ax1.plot(history.history['val_accuracy'], label='Test Accuracy', linestyle='--')
+                    if 'val_accuracy' in history.history:
+                        ax1.plot(history.history['val_accuracy'], label='Test Accuracy', linestyle='--')
                     ax1.set_title('Model Accuracy', fontsize=16)
                     ax1.set_xlabel('Epoch', fontsize=14)
                     ax1.set_ylabel('Accuracy', fontsize=14)
@@ -107,7 +129,8 @@ if page == "Dataset Loading & Training":
 
                     # Loss plot
                     ax2.plot(history.history['loss'], label='Train Loss', color='red')
-                    #ax2.plot(history.history['val_loss'], label='Test Loss', color='orange', linestyle='--')
+                    if 'val_loss' in history.history:
+                        ax2.plot(history.history['val_loss'], label='Test Loss', color='orange', linestyle='--')
                     ax2.set_title('Model Loss', fontsize=16)
                     ax2.set_xlabel('Epoch', fontsize=14)
                     ax2.set_ylabel('Loss', fontsize=14)
@@ -115,20 +138,12 @@ if page == "Dataset Loading & Training":
 
                     plt.tight_layout()
                     st.pyplot(fig)
-    
-                # Thông báo hoàn tất
-                st.success("Dataset loaded, preprocessed, and model trained successfully!")
-            else:
-                st.error("Invalid dataset path!")
+                else:
+                    st.error("MODEL_TRAINING FAILED")
+                '''
 
-#elif page == "Model Evaluation":
-#    if st.session_state.model is not None and st.session_state.X_test is not None and st.session_state.y_test_ohe is not None:
-#        st.title("Model Evaluation")
-#        st.write("Evaluate the model on test set:")
-#        loss, accuracy = evaluate(st.session_state.X_test, st.session_state.y_test_ohe, st.session_state.model)
-#        st.write(f"Loss: {loss}\nAccuracy: {accuracy}")
-#    else:
-#        st.error("No model or test data available for evaluation. Please train the model first.")
+        else:
+            st.error("Invalid dataset path!")
 
 elif page == "Prediction":
     st.title("Model Prediction")
