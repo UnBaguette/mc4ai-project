@@ -37,7 +37,7 @@ if page == "Dataset Loading & Training":
     data_path = "DATASET"
 
     # Cài đặt num_samples
-    num_samples = st.number_input("Number of Samples per Folder", min_value=10, value=2000)
+    num_samples = st.number_input("Number of Samples per Folder", min_value=10, value=1000)
 
     col1, col2, col3 = st.columns(3)
 
@@ -56,9 +56,6 @@ if page == "Dataset Loading & Training":
         if os.path.isdir(data_path):
             with st.spinner('Loading Dataset...'):
                 X, y = load_dataset(data_path, num_samples)
-
-                #st.session_state.X = X
-                #st.session_state.y = y
 
             st.success("Dataset loaded successfully!")
 
@@ -110,9 +107,6 @@ if page == "Dataset Loading & Training":
             with st.spinner('Loading Dataset...'):
                 X, y = load_dataset(data_path, num_samples)
 
-                #st.session_state.X = X
-                #st.session_state.y = y
-
             st.success("Dataset loaded successfully!")
 
             st.write(f"Dataset loaded: {X.shape[0]} samples.")
@@ -132,12 +126,11 @@ if page == "Dataset Loading & Training":
                 
             plt.tight_layout()
             st.pyplot(fig)
+
             if X is not None and y is not None:
                 with st.spinner('Training model...'):
                     X_train, X_test, y_train_ohe, y_test_ohe = prep_dataset(X, y, test_size)
 
-                    #st.session_state.X_test = X_test
-                    #st.session_state.y_test_ohe = y_test_ohe
                     start_time = time.time()
                     model = Train_model(X_train)
                     history = fit_model(model, X_train, y_train_ohe, epochs)
@@ -150,8 +143,6 @@ if page == "Dataset Loading & Training":
                     st.session_state.y_label = letters
 
                 st.success("Model trained successfully!")
-
-                #model.save("Model_v2.h5")
 
                 test_loss, test_accuracy = model.evaluate(X_test, y_test_ohe)
                 
