@@ -1,9 +1,8 @@
 import numpy as np
 from keras.models import Sequential # type: ignore
-from keras.layers import Dense, Input, Flatten, Dropout, BatchNormalization # type: ignore
+from keras.layers import Dense, Input, Flatten # type: ignore
 from keras.utils import set_random_seed # type: ignore
 from keras.backend import clear_session # type: ignore
-from tensorflow.keras.regularizers import l2 # type: ignore
 
 def Train_model(X_train):
     clear_session()
@@ -13,9 +12,9 @@ def Train_model(X_train):
     model = Sequential()
     model.add(Input(shape=X_train.shape[1:]))
 
-    model.add(Flatten())
-    model.add(Dense(128, activation='softmax'))
     #model.add(Flatten())
+    model.add(Dense(128, activation='softmax'))
+    model.add(Flatten())
     
     model.add(Dense(26, activation='softmax'))
 
