@@ -64,7 +64,7 @@ if page == "Dataset Loading & Training":
 
             st.write(f"Dataset loaded: {X.shape[0]} samples.")
 
-            st.write("Sample images from the dataset:")
+            st.write("## Dataset Preview")
             fig, axs = plt.subplots(nrows=26, ncols=10, figsize=(20, 50))
             axs = axs.flatten()
             for i, letter in enumerate(letters):
@@ -93,9 +93,9 @@ if page == "Dataset Loading & Training":
 
                 test_loss, test_accuracy = model.evaluate(X_test, y_test_ohe)
                 
-
+                st.write("## Evaluation on Test Set:")
                 st.write(f"Test Accuracy: {test_accuracy*100:.2f}%. "
-                         f"Test Loss: {test_loss*100:.2f}%")
+                         f"Test Loss: {test_loss:.4f}")
             
             else:
                 st.error("MODEL_LOADING FAILED")
@@ -117,7 +117,7 @@ if page == "Dataset Loading & Training":
 
             st.write(f"Dataset loaded: {X.shape[0]} samples.")
 
-            st.write("Sample images from the dataset:")
+            st.write("## Dataset Preview")
             fig, axs = plt.subplots(nrows=26, ncols=10, figsize=(20, 50))
             axs = axs.flatten()
             for i, letter in enumerate(letters):
@@ -156,17 +156,18 @@ if page == "Dataset Loading & Training":
                 test_loss, test_accuracy = model.evaluate(X_test, y_test_ohe)
                 
 
-                st.write(f"Training completed in {elapsed_time:.2f} seconds. "
-                         f"Train Accuracy: {history.history['accuracy'][-1]*100:.2f}%. "
-                         f"Test Accuracy: {test_accuracy*100:.2f}%")
+                st.write(f"Training completed in {elapsed_time:.2f} seconds. ")
+
+                st.write("## Evaluation on Test Set:")
+                st.write(f"Test Accuracy: {test_accuracy*100:.2f}%. "
+                         f"Test Loss: {test_loss:.4f}")
                 
+                st.write("## Training history:")
                 # Hiển thị đồ thị cho độ chính xác và mất mát
                 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(20, 10))
                 
                 # Accuracy plot
                 ax1.plot(history.history['accuracy'], label='Train Accuracy')
-                if 'val_accuracy' in history.history:
-                    ax1.plot(history.history['val_accuracy'], label='Test Accuracy', linestyle='--')
                 ax1.set_title('Model Accuracy', fontsize=16)
                 ax1.set_xlabel('Epoch', fontsize=14)
                 ax1.set_ylabel('Accuracy', fontsize=14)
@@ -174,8 +175,6 @@ if page == "Dataset Loading & Training":
 
                 # Loss plot
                 ax2.plot(history.history['loss'], label='Train Loss', color='red')
-                if 'val_loss' in history.history:
-                    ax2.plot(history.history['val_loss'], label='Test Loss', color='orange', linestyle='--')
                 ax2.set_title('Model Loss', fontsize=16)
                 ax2.set_xlabel('Epoch', fontsize=14)
                 ax2.set_ylabel('Loss', fontsize=14)
@@ -241,7 +240,6 @@ elif page == "Prediction":
                 with col4:
                     st.write("Grayscale Image")
                     st.image(img_gray.reshape(64, 64), use_column_width=False, clamp=True)
-                    #st.write(f"Predicted Letter (Normal): {predicted_label}  {prediction[0][predicted_class] * 100:.2f}%")
 
                     # Get the top 5 predictions for normal image
                     top5_indices = np.argsort(prediction[0])[::-1][:5]
@@ -256,7 +254,6 @@ elif page == "Prediction":
                 with col5:
                     st.write("Invert Grayscale Image")
                     st.image(img_gray_inverted.reshape(64, 64), use_column_width=False, clamp=True)
-                    #st.write(f"Predicted Letter (Inverted): {predicted_label_inverted}  {prediction_inverted[0][predicted_class_inverted] * 100:.2f}%")
 
                     # Get the top 5 predictions for inverted image
                     top5_indices_inverted = np.argsort(prediction_inverted[0])[::-1][:5]
