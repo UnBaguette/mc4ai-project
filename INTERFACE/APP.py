@@ -221,11 +221,11 @@ elif page == "Prediction":
                     st.write("Uploaded Image")
                     st.image(img, use_column_width= True, clamp=True)
 
+                labels = np.unique(st.session_state.y_label)
+
                 # Make prediction for original image
                 prediction = st.session_state.model.predict(img_gray)
                 predicted_class = np.argmax(prediction)
-                labels = np.unique(st.session_state.y_label)
-                st.write(predicted_class)
                 predicted_label = labels[predicted_class]
 
                 with col4:
@@ -253,7 +253,7 @@ elif page == "Prediction":
 
             elif canvas_result.image_data is not None:
                 img = canvas_result.image_data
-                img = np.mean(img, axis=-1)  # Convert to grayscale
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
                 img = cv2.resize(img, (64, 64))  # Resize image
                 img = img / 255.0  # Normalize
                 img = np.expand_dims(img, axis=0)  # Add batch dimension
